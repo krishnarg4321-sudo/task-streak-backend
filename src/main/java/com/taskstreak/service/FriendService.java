@@ -95,6 +95,8 @@ public class FriendService {
             String otherUserId = f.getUserId().equals(currentUserId) ? f.getFriendId() : f.getUserId();
             User otherUser = userRepository.findById(otherUserId).orElse(null);
             if (otherUser != null) {
+                var otherUserDto = authService.toUserDto(otherUser);
+
                 FriendResponseDto dto = new FriendResponseDto();
                 dto.setFriendshipId(f.getId());
                 dto.setUserId(otherUser.getId());
@@ -102,8 +104,12 @@ public class FriendService {
                 dto.setName(otherUser.getName());
                 dto.setProfilePictureUrl(otherUser.getProfilePictureUrl());
                 dto.setStatus(f.getStatus());
-                dto.setCurrentStreak(authService.calculateStreak(otherUser.getId()));
-                dto.setOnline(true);
+                dto.setIncoming(f.getStatus() == Friendship.Status.PENDING && f.getFriendId().equals(currentUserId));
+                dto.setCurrentStreak(otherUserDto.getCurrentStreak());
+                dto.setOnline(otherUserDto.isOnline());
+                dto.setActiveStatus(otherUserDto.getActiveStatus());
+                dto.setLevel(otherUserDto.getLevel());
+                dto.setLevelTitle(otherUserDto.getLevelTitle());
 
                 List<Task> todayTasks = taskRepository.findByUserIdAndDate(otherUser.getId(), today);
                 dto.setTodayTasksCount(todayTasks.size());
@@ -113,6 +119,19 @@ public class FriendService {
             }
         }
         return result;
+    }
+
+    public void nudgeFriend(String currentUserId, String friendId) {
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new IllegalArgumentException("Friend not found"));
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("friendName", currentUser.getName());
+        payload.put("friendUsername", currentUser.getUsername());
+
+        notificationService.createAndSendNotification(friendId, NotificationType.FRIEND_NUDGE, payload);
     }
 
     public Map<String, Object> getFriendProgress(String currentUserId, String friendId) {

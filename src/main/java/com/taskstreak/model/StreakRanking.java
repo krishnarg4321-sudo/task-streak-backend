@@ -21,11 +21,12 @@ public class StreakRanking {
         private int currentStreakDays;
         private double score;
         private int rank;
+        private int level = 1;
 
         public RankEntry() {}
 
         public RankEntry(String userId, String username, String name, String profilePictureUrl,
-                         double completionRate, int tasksCompleted, int totalTasks, int currentStreakDays, double score, int rank) {
+                         double completionRate, int tasksCompleted, int totalTasks, int currentStreakDays, double score, int rank, int level) {
             this.userId = userId;
             this.username = username;
             this.name = name;
@@ -36,7 +37,11 @@ public class StreakRanking {
             this.currentStreakDays = currentStreakDays;
             this.score = score;
             this.rank = rank;
+            this.level = level;
         }
+
+        public int getLevel() { return level; }
+        public void setLevel(int level) { this.level = level; }
 
         public String getUserId() { return userId; }
         public void setUserId(String userId) { this.userId = userId; }

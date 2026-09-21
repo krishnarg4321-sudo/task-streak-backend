@@ -14,6 +14,7 @@ public class NotificationEvent {
         DAILY_REMINDER,
         FRIEND_TASK_COMPLETED,
         FRIEND_REQUEST,
+        FRIEND_NUDGE,
         STREAK_MILESTONE
     }
 

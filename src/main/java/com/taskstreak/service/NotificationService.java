@@ -68,6 +68,10 @@ public class NotificationService {
                 "New Friend Request",
                 "{friendName} wants to connect with you on Task Streak!"
         ));
+        templateMap.put(NotificationType.FRIEND_NUDGE, new Template(
+                "Focus Nudge",
+                "{friendName} is nudging you to start working on your tasks!"
+        ));
         templateMap.put(NotificationType.STREAK_MILESTONE, new Template(
                 "Streak Milestone Reached",
                 "Awesome! You hit a {streak}-day streak milestone in {groupName}!"
@@ -83,6 +87,15 @@ public class NotificationService {
                 type.name().replace('_', ' '),
                 "You have a new update."
         ));
+
+        // Special handling for 0-day streak reminder copy
+        if (type == NotificationType.DAILY_REMINDER && payload != null) {
+            Object streakObj = payload.get("streak");
+            int streakVal = streakObj instanceof Number ? ((Number) streakObj).intValue() : 0;
+            if (streakVal == 0) {
+                template = new Template("Daily Task Reminder", "Hey {name}! Start a new streak today by adding your first task!");
+            }
+        }
 
         String title = template.formatTitle(payload);
         String message = template.formatMessage(payload);

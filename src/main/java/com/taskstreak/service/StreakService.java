@@ -56,6 +56,7 @@ public class StreakService {
             int total = userTasks.size();
             double completionRate = total > 0 ? ((double) completed / total) * 100.0 : 0.0;
             int streakDays = authService.calculateStreak(u.getId());
+            var userDto = authService.toUserDto(u);
 
             // Score formula: 60% completion rate + 25% streak consistency + 15% volume
             double score = (completionRate * 0.6) + (streakDays * 5.0) + (completed * 2.0);
@@ -71,7 +72,8 @@ public class StreakService {
                     total,
                     streakDays,
                     score,
-                    1
+                    1,
+                    userDto.getLevel()
             );
             entries.add(entry);
         }
@@ -93,10 +95,7 @@ public class StreakService {
     }
 
     public StreakRanking getWeeklyRanking(String groupId) {
-        LocalDate monday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        String mondayStr = monday.format(DateTimeFormatter.ISO_LOCAL_DATE);
-
-        return streakRankingRepository.findByGroupIdAndWeekStart(groupId, mondayStr)
-                .orElseGet(() -> computeAndSaveWeeklyRanking(groupId));
+        // Always compute dynamic ranking to reflect real-time task progression
+        return computeAndSaveWeeklyRanking(groupId);
     }
 }

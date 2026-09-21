@@ -30,8 +30,12 @@ public class SocialDtos {
         private String name;
         private String profilePictureUrl;
         private Friendship.Status status;
+        private boolean isIncoming = false;
         private boolean online;
+        private String activeStatus = "ACTIVE";
         private int currentStreak;
+        private int level = 1;
+        private String levelTitle = "Novice Grinder";
         private int todayTasksCount;
         private int todayCompletedCount;
 
@@ -55,11 +59,23 @@ public class SocialDtos {
         public Friendship.Status getStatus() { return status; }
         public void setStatus(Friendship.Status status) { this.status = status; }
 
+        public boolean isIncoming() { return isIncoming; }
+        public void setIncoming(boolean incoming) { isIncoming = incoming; }
+
         public boolean isOnline() { return online; }
         public void setOnline(boolean online) { this.online = online; }
 
+        public String getActiveStatus() { return activeStatus; }
+        public void setActiveStatus(String activeStatus) { this.activeStatus = activeStatus; }
+
         public int getCurrentStreak() { return currentStreak; }
         public void setCurrentStreak(int currentStreak) { this.currentStreak = currentStreak; }
+
+        public int getLevel() { return level; }
+        public void setLevel(int level) { this.level = level; }
+
+        public String getLevelTitle() { return levelTitle; }
+        public void setLevelTitle(String levelTitle) { this.levelTitle = levelTitle; }
 
         public int getTodayTasksCount() { return todayTasksCount; }
         public void setTodayTasksCount(int todayTasksCount) { this.todayTasksCount = todayTasksCount; }
@@ -125,6 +141,7 @@ public class SocialDtos {
         private String name;
         private String profilePictureUrl;
         private int currentStreak;
+        private int level = 1;
         private double weeklyCompletionRate;
         private int weeklyCompletedTasks;
         private int weeklyTotalTasks;
@@ -146,6 +163,9 @@ public class SocialDtos {
 
         public int getCurrentStreak() { return currentStreak; }
         public void setCurrentStreak(int currentStreak) { this.currentStreak = currentStreak; }
+
+        public int getLevel() { return level; }
+        public void setLevel(int level) { this.level = level; }
 
         public double getWeeklyCompletionRate() { return weeklyCompletionRate; }
         public void setWeeklyCompletionRate(double weeklyCompletionRate) { this.weeklyCompletionRate = weeklyCompletionRate; }

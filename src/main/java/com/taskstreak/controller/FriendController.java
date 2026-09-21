@@ -55,4 +55,15 @@ public class FriendController {
         Map<String, Object> progress = friendService.getFriendProgress(userId, friendId);
         return ResponseEntity.ok(progress);
     }
+
+    @PostMapping("/{id}/nudge")
+    public ResponseEntity<?> nudgeFriend(@AuthenticationPrincipal String userId,
+                                         @PathVariable("id") String friendId) {
+        try {
+            friendService.nudgeFriend(userId, friendId);
+            return ResponseEntity.ok(Map.of("message", "Nudge sent successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

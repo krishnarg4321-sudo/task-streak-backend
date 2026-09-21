@@ -21,6 +21,9 @@ public class User {
     private String passwordHash;
     private String profilePictureUrl;
     private Instant createdAt = Instant.now();
+    private Instant lastActiveAt = Instant.now();
+    private int level = 1;
+    private int xp = 0;
 
     public User() {}
 
@@ -29,8 +32,11 @@ public class User {
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.profilePictureUrl = profilePictureUrl != null && !profilePictureUrl.isBlank() ? profilePictureUrl : "/avatars/avatar-1.svg";
+        this.profilePictureUrl = profilePictureUrl != null && !profilePictureUrl.isBlank() ? profilePictureUrl : "";
         this.createdAt = Instant.now();
+        this.lastActiveAt = Instant.now();
+        this.level = 1;
+        this.xp = 0;
     }
 
     public String getId() { return id; }
@@ -53,4 +59,13 @@ public class User {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public Instant getLastActiveAt() { return lastActiveAt; }
+    public void setLastActiveAt(Instant lastActiveAt) { this.lastActiveAt = lastActiveAt; }
+
+    public int getLevel() { return level; }
+    public void setLevel(int level) { this.level = level; }
+
+    public int getXp() { return xp; }
+    public void setXp(int xp) { this.xp = xp; }
 }

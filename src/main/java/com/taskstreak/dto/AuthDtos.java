@@ -66,6 +66,12 @@ public class AuthDtos {
         private String profilePictureUrl;
         private int currentStreak;
         private boolean online;
+        private String activeStatus = "ACTIVE";
+        private int level = 1;
+        private String levelTitle = "Novice Grinder";
+        private int xp = 0;
+        private int totalCompletedTasks = 0;
+        private long totalFocusSeconds = 0;
 
         public UserDto() {}
 
@@ -76,6 +82,9 @@ public class AuthDtos {
             this.email = user.getEmail();
             this.profilePictureUrl = user.getProfilePictureUrl();
             this.online = true;
+            this.activeStatus = "ACTIVE";
+            this.level = user.getLevel() > 0 ? user.getLevel() : 1;
+            this.xp = user.getXp();
         }
 
         public String getId() { return id; }
@@ -98,6 +107,24 @@ public class AuthDtos {
 
         public boolean isOnline() { return online; }
         public void setOnline(boolean online) { this.online = online; }
+
+        public String getActiveStatus() { return activeStatus; }
+        public void setActiveStatus(String activeStatus) { this.activeStatus = activeStatus; }
+
+        public int getLevel() { return level; }
+        public void setLevel(int level) { this.level = level; }
+
+        public String getLevelTitle() { return levelTitle; }
+        public void setLevelTitle(String levelTitle) { this.levelTitle = levelTitle; }
+
+        public int getXp() { return xp; }
+        public void setXp(int xp) { this.xp = xp; }
+
+        public int getTotalCompletedTasks() { return totalCompletedTasks; }
+        public void setTotalCompletedTasks(int totalCompletedTasks) { this.totalCompletedTasks = totalCompletedTasks; }
+
+        public long getTotalFocusSeconds() { return totalFocusSeconds; }
+        public void setTotalFocusSeconds(long totalFocusSeconds) { this.totalFocusSeconds = totalFocusSeconds; }
     }
 
     public static class AuthResponse {

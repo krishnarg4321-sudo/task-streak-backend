@@ -98,13 +98,15 @@ public class GroupService {
 
         List<MemberProgressDto> memberStats = new ArrayList<>();
         for (User u : members) {
+            var userDto = authService.toUserDto(u);
             MemberProgressDto dto = new MemberProgressDto();
             dto.setUserId(u.getId());
             dto.setUsername(u.getUsername());
             dto.setName(u.getName());
             dto.setProfilePictureUrl(u.getProfilePictureUrl());
             dto.setCurrentStreak(authService.calculateStreak(u.getId()));
-            dto.setOnline(true);
+            dto.setLevel(userDto.getLevel());
+            dto.setOnline(userDto.isOnline());
 
             List<Task> userWeekTasks = groupTasks.stream().filter(t -> t.getUserId().equals(u.getId())).toList();
             int completed = (int) userWeekTasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.COMPLETED).count();

@@ -66,6 +66,9 @@ public class AuthService {
         }
 
         User user = userOpt.get();
+        user.setLastActiveAt(java.time.Instant.now());
+        userRepository.save(user);
+
         String token = jwtService.generateToken(user.getId(), user.getUsername());
         UserDto userDto = toUserDto(user);
         return new AuthResponse(token, userDto);
@@ -74,6 +77,8 @@ public class AuthService {
     public UserDto getUserDtoById(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setLastActiveAt(java.time.Instant.now());
+        userRepository.save(user);
         return toUserDto(user);
     }
 
@@ -82,14 +87,63 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (name != null && !name.isBlank()) user.setName(name);
         if (profilePictureUrl != null && !profilePictureUrl.isBlank()) user.setProfilePictureUrl(profilePictureUrl);
+        user.setLastActiveAt(java.time.Instant.now());
         user = userRepository.save(user);
         return toUserDto(user);
     }
 
     public UserDto toUserDto(User user) {
         UserDto dto = new UserDto(user);
-        dto.setCurrentStreak(calculateStreak(user.getId()));
-        dto.setOnline(true);
+        int streak = calculateStreak(user.getId());
+        dto.setCurrentStreak(streak);
+
+        List<Task> allUserTasks = taskRepository.findByUserId(user.getId());
+        int completedTasks = (int) allUserTasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.COMPLETED).count();
+        long totalFocusSeconds = allUserTasks.stream().mapToLong(Task::getTimeSpentSeconds).sum();
+        
+        // Dynamic Level Calculation
+        int xp = (streak * 15) + (completedTasks * 10) + (int)(totalFocusSeconds / 30);
+        int level = Math.max(1, 1 + (xp / 60));
+        
+        String levelTitle;
+        if (level <= 2) {
+            levelTitle = "Novice Grinder";
+        } else if (level <= 4) {
+            levelTitle = "Streak Builder";
+        } else if (level <= 7) {
+            levelTitle = "Deep Work Specialist";
+        } else if (level <= 10) {
+            levelTitle = "Focus Master";
+        } else {
+            levelTitle = "Productivity Legend";
+        }
+
+        // Dynamic Active Status Calculation
+        String activeStatus;
+        java.time.Instant now = java.time.Instant.now();
+        java.time.Instant lastActive = user.getLastActiveAt() != null ? user.getLastActiveAt() : user.getCreatedAt();
+        long diffMinutes = java.time.Duration.between(lastActive, now).toMinutes();
+
+        boolean hasTaskToday = taskRepository.existsByUserIdAndDate(user.getId(), LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        if (diffMinutes <= 10 || hasTaskToday) {
+            activeStatus = "ACTIVE";
+            dto.setOnline(true);
+        } else if (diffMinutes <= 720) { // 12 hours
+            activeStatus = "AWAY";
+            dto.setOnline(true);
+        } else {
+            activeStatus = "OFFLINE";
+            dto.setOnline(false);
+        }
+
+        dto.setLevel(level);
+        dto.setLevelTitle(levelTitle);
+        dto.setXp(xp);
+        dto.setActiveStatus(activeStatus);
+        dto.setTotalCompletedTasks(completedTasks);
+        dto.setTotalFocusSeconds(totalFocusSeconds);
+
         return dto;
     }
 
