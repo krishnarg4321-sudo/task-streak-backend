@@ -12,6 +12,7 @@ import java.util.Map;
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
+    private final WebPushService webPushService;
 
     // Configurable template map for custom internal notification framework
     private final Map<NotificationType, Template> templateMap = new HashMap<>();
@@ -46,8 +47,9 @@ public class NotificationService {
         }
     }
 
-    public NotificationService(NotificationRepository notificationRepository) {
+    public NotificationService(NotificationRepository notificationRepository, WebPushService webPushService) {
         this.notificationRepository = notificationRepository;
+        this.webPushService = webPushService;
         initializeTemplates();
     }
 
@@ -101,7 +103,19 @@ public class NotificationService {
         String message = template.formatMessage(payload);
 
         NotificationEvent event = new NotificationEvent(userId, type, title, message, payload);
-        return notificationRepository.save(event);
+        NotificationEvent saved = notificationRepository.save(event);
+
+        // Send real Web Push notification to Android / Browser
+        try {
+            Map<String, Object> pushData = payload != null ? new HashMap<>(payload) : new HashMap<>();
+            pushData.put("notificationId", saved.getId());
+            pushData.put("type", type.name());
+            webPushService.sendPush(userId, title, message, pushData);
+        } catch (Exception e) {
+            // Log and continue without blocking in-app notification flow
+        }
+
+        return saved;
     }
 
     public List<NotificationEvent> getNotificationsForUser(String userId) {

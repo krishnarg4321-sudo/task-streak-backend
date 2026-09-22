@@ -202,12 +202,29 @@ public class TaskService {
 
         // Today summary
         String todayStr = endDate.format(fmt);
-        List<Task> todayTasks = byDate.getOrDefault(todayStr, Collections.emptyList());
+        List<Task> todayTasks = taskRepository.findByUserIdAndDate(userId, todayStr);
+        if (todayTasks.isEmpty()) {
+            // Fallback to latest tasks date or byDate
+            todayTasks = byDate.getOrDefault(todayStr, Collections.emptyList());
+            if (todayTasks.isEmpty()) {
+                List<Task> allUserTasks = taskRepository.findByUserId(userId);
+                if (!allUserTasks.isEmpty()) {
+                    String latestDate = allUserTasks.stream()
+                            .map(Task::getDate)
+                            .filter(Objects::nonNull)
+                            .max(String::compareTo)
+                            .orElse(todayStr);
+                    todayTasks = allUserTasks.stream().filter(t -> latestDate.equals(t.getDate())).toList();
+                }
+            }
+        }
+
         int todayCompleted = (int) todayTasks.stream().filter(t -> t.getStatus() == TaskStatus.COMPLETED).count();
         int todayPartial = (int) todayTasks.stream().filter(t -> t.getStatus() == TaskStatus.PARTIALLY_COMPLETED).count();
         int todayNotCompleted = (int) todayTasks.stream().filter(t -> t.getStatus() == TaskStatus.NOT_COMPLETED || t.getStatus() == TaskStatus.IN_PROGRESS).count();
         int todayTotal = todayTasks.size();
         long todayTimeSpent = todayTasks.stream().mapToLong(Task::getTimeSpentSeconds).sum();
+        double todayAvgTimeSpent = todayTotal > 0 ? (double) todayTimeSpent / todayTotal : 0.0;
 
         Map<String, Object> todaySummary = new HashMap<>();
         todaySummary.put("total", todayTotal);
@@ -215,6 +232,7 @@ public class TaskService {
         todaySummary.put("partial", todayPartial);
         todaySummary.put("notCompleted", todayNotCompleted);
         todaySummary.put("timeSpentSeconds", todayTimeSpent);
+        todaySummary.put("averageTimeSpentSeconds", Math.round(todayAvgTimeSpent * 10.0) / 10.0);
         todaySummary.put("completionRate", todayTotal > 0 ? Math.round(((todayCompleted + 0.5 * todayPartial) / todayTotal) * 1000.0) / 10.0 : 0.0);
 
         long totalTimeSpent = tasks.stream().mapToLong(Task::getTimeSpentSeconds).sum();
